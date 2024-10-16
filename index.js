@@ -4,6 +4,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 3000;
+const jwt = require('jsonwebtoken');
+// const cookieParser = require('cookie-parser')
+
 
 // middleware
 app.use(cors());
@@ -29,7 +32,17 @@ async function run() {
 
         const serviceCollection = client.db('carDoctor').collection('services');
         const bookingCollection = client.db('carDoctor').collection('bookings');
+// Auth Related api
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const token = jwt.sign(user,process.env.Access_token_Secret);
+            console.log("token is ",token);
+            res.send({success:true});
+        });
 
+
+        // Service related api 
         app.get('/services', async (req, res) => {
             const cursor = serviceCollection.find();
             const result = await cursor.toArray();
@@ -41,7 +54,6 @@ async function run() {
             const query = { _id: new ObjectId(id) }
 
             const options = {
-                // Include only the `title` and `imdb` fields in the returned document
                 projection: { title: 1, price: 1, service_id: 1, img: 1 },
             };
 
